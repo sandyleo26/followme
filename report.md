@@ -10,6 +10,7 @@
 [following]: ./misc/following.png
 [patrol-nohero]: ./misc/patrol-nohero.png
 [epoch66]: ./misc/epoch66.png
+[inception1x1]: ./misc/inception1x1.png
 
 
 In this project, I will build a segmentation network, train it, validate it, and deploy it in the Follow Me project. In the end, it'll be used for drone tracking and following a single hero target in the simulator!
@@ -92,9 +93,7 @@ For `steps_per_epoch` and `validation_steps`, according to [this](https://stacko
 		steps_per_epoch = TotalTrainingSamples / TrainingBatchSize
 		validation_steps = TotalvalidationSamples / ValidationBatchSize
 
-
-### 4. The student has a clear understanding and is able to identify the use of various techniques and concepts in network layers indicated by the write-up.
-
+#### Training process
 Although I heard some people reported that the data is not good, I decide to only use the provided training data. Also I use the hero checker helper function and find that ~37% of training images contain at least part of hero.
 
 
@@ -149,12 +148,46 @@ Also, initially only 40 epochs were used and the IOU was 0.395! Since it's so cl
 ![Epoch 66][epoch66]
 
 
+### 4. The student has a clear understanding and is able to identify the use of various techniques and concepts in network layers indicated by the write-up.
+
+> The student demonstrates a clear understanding of 1 by 1 convolutions and where/when/how it should be used.
+
+1x1 conv filters can be used to change the dimensionality in the filter space, not in spacial dimension space. For example, 
+
+Suppose we have a conv layer which outputs an `(N,F,H,W)` shaped tensor where:
+
+- N is the batch size
+- F is the number of convolutional filters
+- H,W are the spatial dimensions
+
+If the output of this layer is fed into 1x1 conv layer with F1 filters, then the output tensor's shape become `(N,F1,H,W)`. And if F1 < F, we reduce the fitler dimensionality. 
+
+Yes we can also combine these 2 conv layers into one to achieve the same dimensionality reduction but 1x1 conv layer also includes non-linear activation layer like ReLU hence the convolutions are no longer linear operators and cannot be combined.
+
+In practice, 1x1 conv layer is often used before the expensive 3x3 or 5x5 convolutions. This is probably most well known in Google's Inception architecture as below.
+
+![Inception][inception1x1]
+
+> The student demonstrates a clear understanding of a fully connected layer and where/when/how it should be used.
+
+The main benefit to not use fully connected layer in this task is that FC layer will flatten the inputs hence throw away the spacial information. This is fine in a object detection task in which what matters is to tell what objects exist in a image. 
+
+However, spacial information is key to segmentation problems, which needs to tell which object a pixel belongs to.
+
+
 
 ### 5. The student has a clear understanding of image manipulation in the context of the project indicated by the write-up.
 
 > The student is able to identify the use of various reasons for encoding / decoding images, when it should be used, why it is useful, and any problems that may arise.
 
-Here's a snapshot of images following target:
+Encoders and decoders are networks, which try to reconstruct their own input. They are constructed in this wasy so that
+
+- Encoder learns to educes the input size by using one or more hidden layers, until it reaches a reasonably small hidden layer in the middle. As a result data has been compressed (encoded) into a few variables but still keeps the key information
+- Decoder learns to reconstruct (decode) the image input from the encoded information. In order to do a good job at reconstructing the input the network has to learn a good representation of the data in the middle hidden layer. 
+
+This structure can be useful for dimensionality reduction, or for generating new “synthetic” data. For example, an application of this Autoencoder structure is to remove noise from picture or reconstruct missing parts.
+
+Another use, which is what we are doing here is to do segmentation. The autoencoder learns to color pixels belonging to the same object in same color. Down below are some snapshots of color different objects into R,G,B.
 
 ![following target][following]
 
@@ -178,7 +211,14 @@ Without change I can hardly imagine the model can follow other non-human objects
 
 
 ### 7. Future Improvements
+
 - I see many people having IOU > 0.45, which is definitely worth to try!
 - Try clean the data. Many people report that removing some training images without hero could improve the result
 - Try recording data using manual control
-- 
+
+### 8. References
+- [What does 1x1 convolution mean in a neural network?](https://stats.stackexchange.com/questions/194142/what-does-1x1-convolution-mean-in-a-neural-network)
+- [One by One [ 1 x 1 ] Convolution - counter-intuitively useful](http://iamaaditya.github.io/2016/03/one-by-one-convolution/)
+- [An Introduction to different Types of Convolutions in Deep Learning](https://towardsdatascience.com/types-of-convolutions-in-deep-learning-717013397f4d)
+- [Image Segmentation](https://leonardoaraujosantos.gitbooks.io/artificial-inteligence/content/image_segmentation.html)
+- [Autoencoders — Deep Learning bits #1](https://hackernoon.com/autoencoders-deep-learning-bits-1-11731e200694)
