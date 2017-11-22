@@ -11,9 +11,12 @@
 [patrol-nohero]: ./misc/patrol-nohero.png
 [epoch66]: ./misc/epoch66.png
 [inception1x1]: ./misc/inception1x1.png
+[youtube]: ./misc/youtube.png
 
 
 In this project, I will build a segmentation network, train it, validate it, and deploy it in the Follow Me project. In the end, it'll be used for drone tracking and following a single hero target in the simulator!
+
+[![Youtube](./misc/youtube.png)](https://youtu.be/O_JFzHbZA88)
 
 ### 1. Provide a write-up document including all rubric items addressed in a clear and concise manner
 
